@@ -2,12 +2,16 @@ import express, { Request, Response } from "express";
 import "dotenv/config";
 import multer from "multer"
 import { stringify } from "querystring";
+import { randomUUID } from "crypto";
+
+import { extractTextFromPdf, chunkText } from "./services/pdfProcessor";
 
 const app = express()
 const port = process.env.PORT
 
 // setup multer config for defining file storage location
-const UPLOADLOCATION = 'uploads/'
+const UPLOADLOCATION = process.env.UPLOADLOCATION ?? "uploads/"
+var uniqueName = ""
 const storage = multer.diskStorage({
 
     destination: (req, file, callback) => {
@@ -15,13 +19,13 @@ const storage = multer.diskStorage({
     },
 
     filename: (req, file, callback) => {
-        let uniqueName = Date.now() + "-" + file.originalname
+        uniqueName = Date.now() + "_" + randomUUID() + "_" + file.originalname
         callback(null, uniqueName)
     },
 
 })
 
-const upload = multer({dest: UPLOADLOCATION, storage})
+const upload = multer({dest: UPLOADLOCATION, storage, })
 
 app.use((req, res, next) => {
     console.log("i am middleware!")
@@ -33,16 +37,34 @@ app.get("/", (req,res) => {
     res.send("hello world!")
 })
 
-app.post(`/uploadPDF`, upload.single('uploadedPDF') ,(req, res) => {
+app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
     const pdf = req.file
-    if(pdf) {
-
-        res.status(200).json({message: "revieved pdf!", file: req.file, fileBody: req.body})
-    }
-    else {
-        res.status(500).json("internal server error.")
+    if (pdf) {
+        try {
+            const extractedText = await extractTextFromPdf(pdf.path)
+            const chunks = chunkText(extractedText.text).map((chunk, i) => ({
+                ...chunk,
+                filename: pdf.originalname,
+                chunkIndex: i,
+                uploadedAt: new Date().toISOString()
+            })) 
+            res.status(200).json({
+                message: "received pdf!",
+                file: req.file,
+                fileBody: req.body,
+                extracted: extractedText,
+                numChunks: chunks.length,
+                previewChunk: chunks[0]
+            })
+        } catch (err) {
+            console.error("Extraction error:", err)
+            res.status(500).json({ error: "Failed to extract PDF text." })
+        }
+    } else {
+        res.status(400).json({ error: "No file uploaded." })
     }
 })
+
 
 
 app.listen(port, () => {
