@@ -12,8 +12,10 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
+    "@chroma-core/default-embed": "^0.1.8",
     "@types/multer": "^2.0.0",
     "@types/pdf-parse": "^1.1.5",
+    "chromadb": "^3.0.9",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "multer": "^2.0.1",

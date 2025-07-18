@@ -29,7 +29,6 @@ export function chunkText(text: string, chunkSize = 1000, overlap = 200) {
     for (let i = 0; i < text.length; i += chunkSize - overlap) {
         const end = Math.min(i + chunkSize, text.length)
         chunks.push({
-            index: chunks.length,
             content: text.slice(i, end)
         })
         if (end === text.length) break

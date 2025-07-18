@@ -44,9 +44,11 @@ app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
             const extractedText = await extractTextFromPdf(pdf.path)
             const chunks = chunkText(extractedText.text).map((chunk, i) => ({
                 ...chunk,
-                filename: pdf.originalname,
-                chunkIndex: i,
-                uploadedAt: new Date().toISOString()
+                metadata: {
+                    filename: pdf.originalname,
+                    chunkIndex: i,
+                    uploadedAt: new Date().toISOString()
+                }
             })) 
             res.status(200).json({
                 message: "received pdf!",
