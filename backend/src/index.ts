@@ -1,3 +1,5 @@
+// index.ts
+
 import express, { Request, Response } from "express";
 import "dotenv/config";
 import multer from "multer"
@@ -23,9 +25,11 @@ const storage = multer.diskStorage({
         callback(null, uniqueName)
     },
 
+    
+
 })
 
-const upload = multer({dest: UPLOADLOCATION, storage, })
+const upload = multer({dest: UPLOADLOCATION, storage, limits: {fileSize: 20 * 1024 * 1024} })  // 20MB filesize limit for now
 
 app.use((req, res, next) => {
     console.log("i am middleware!")
@@ -39,9 +43,11 @@ app.get("/", (req,res) => {
 
 app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
     const pdf = req.file
-    if (pdf) {
+    if (pdf && pdf.mimetype == "application/pdf") {
         try {
             const extractedText = await extractTextFromPdf(pdf.path)
+
+            // append metadata to chunks 
             const chunks = chunkText(extractedText.text).map((chunk, i) => ({
                 ...chunk,
                 metadata: {
@@ -50,20 +56,31 @@ app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
                     uploadedAt: new Date().toISOString()
                 }
             })) 
+
+            const embeddingRes = await fetch("http://127.0.0.1:8000/embed", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({chunks})
+            })
+
+            const embeddings = await embeddingRes.json()
+
             res.status(200).json({
                 message: "received pdf!",
                 file: req.file,
                 fileBody: req.body,
                 extracted: extractedText,
                 numChunks: chunks.length,
-                previewChunk: chunks[0]
+                previewChunk: chunks[0],
+                embeddings: embeddings
             })
+
         } catch (err) {
             console.error("Extraction error:", err)
             res.status(500).json({ error: "Failed to extract PDF text." })
         }
     } else {
-        res.status(400).json({ error: "No file uploaded." })
+        res.status(400).json({ error: "Wrong file type or none selected." })
     }
 })
 
