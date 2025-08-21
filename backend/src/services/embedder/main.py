@@ -34,7 +34,7 @@ async def embed(req: ChunkRequest):
     
     try:
         embeddings = embedChunks(texts)
-        return {"embeddings": embeddings.tolist()}
+        return embeddings.tolist()
     except Exception as e:
         print("Error in embedding:", e)
         return JSONResponse(content={"error": str(e)}, status_code=500)

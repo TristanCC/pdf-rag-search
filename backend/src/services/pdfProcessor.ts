@@ -13,19 +13,6 @@ export async function extractTextFromPdf(filePath: string) {
     }   
 }
 
-//export function chunkText(text: string, chunkSize = 1000, overlap = 200) {
-//    const chunks = []
-//    let index = 0
-//    for(let i = 0; i < text.length; i += chunkSize - overlap) {
-//        chunks.push({
-//            index: index,
-//            content: text.slice(i, i+ chunkSize),
-//
-//        })
-//    }
-//    return chunks
-//}
-
 export function chunkText(text: string, chunkSize = 1000, overlap = 200) {
     const chunks = []
     for (let i = 0; i < text.length; i += chunkSize - overlap) {
