@@ -6,7 +6,7 @@ import multer from "multer"
 import { stringify } from "querystring";
 import { randomUUID } from "crypto";
 
-import { extractTextFromPdf, chunkText } from "./services/pdfProcessor";
+import { extractTextPerPage, chunkText } from "./services/pdfProcessor.js";
 
 const app = express()
 const port = process.env.PORT
@@ -45,18 +45,20 @@ app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
     const pdf = req.file
     if (pdf && pdf.mimetype == "application/pdf") {
         try {
-            const extractedText = await extractTextFromPdf(pdf.path)
+            const extractedText = await extractTextPerPage(pdf.path)
 
             // append metadata to chunks 
-            const chunks = chunkText(extractedText.text).map((chunk, i) => ({
+        const chunks = extractedText.flatMap(page =>
+            chunkText(page.text).map((chunk, i) => ({
                 ...chunk,
                 metadata: {
                     filename: pdf.originalname,
+                    pageNumber: page.pageNumber,
                     chunkIndex: i,
                     uploadedAt: new Date().toISOString()
                 }
-            })) 
-
+            }))
+        )
             const embeddingRes = await fetch("http://127.0.0.1:8000/embed", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},

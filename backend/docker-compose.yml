@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  pgvector:
+    image: pgvector/pgvector:0.8.0-pg17-bookworm
+    container_name: pgvector2
+    environment:
+      POSTGRES_USER: raguser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ragdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgvector_data:
