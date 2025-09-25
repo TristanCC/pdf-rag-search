@@ -6,7 +6,7 @@ services:
     container_name: pgvector2
     environment:
       POSTGRES_USER: raguser
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ragdb
     ports:
       - "5433:5432"

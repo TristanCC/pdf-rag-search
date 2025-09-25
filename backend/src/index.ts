@@ -5,11 +5,14 @@ import "dotenv/config";
 import multer from "multer"
 import { stringify } from "querystring";
 import { randomUUID } from "crypto";
-
+import client from "./db/dbSetup.js";
+import { connectDB } from "./db/dbSetup.js";
 import { extractTextPerPage, chunkText } from "./services/pdfProcessor.js";
 
 const app = express()
 const port = process.env.PORT
+
+await connectDB()
 
 // setup multer config for defining file storage location
 const UPLOADLOCATION = process.env.UPLOADLOCATION ?? "uploads/"
