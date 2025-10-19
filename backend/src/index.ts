@@ -6,7 +6,7 @@ import multer from "multer"
 import { stringify } from "querystring";
 import { randomUUID } from "crypto";
 import client from "./db/dbSetup.js";
-import { connectDB } from "./db/dbSetup.js";
+import { connectDB, insertRows } from "./db/dbSetup.js";
 import { extractTextPerPage, chunkText } from "./services/pdfProcessor.js";
 
 const app = express()
@@ -62,23 +62,25 @@ app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
                 }
             }))
         )
-            const embeddingRes = await fetch("http://127.0.0.1:8000/embed", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({chunks})
-            })
+        console.log(chunks)
+        const embeddingRes = await fetch("http://127.0.0.1:8000/embed", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({chunks})
+        })
 
-            const embeddings = await embeddingRes.json()
-
-            res.status(200).json({
-                message: "received pdf!",
-                file: req.file,
-                fileBody: req.body,
-                extracted: extractedText,
-                numChunks: chunks.length,
-                previewChunk: chunks[0],
-                embeddings: embeddings
-            })
+        const embeddings = await embeddingRes.json()
+        const embeddedFile= {
+            message: "received pdf!",
+            file: req.file,
+            fileBody: req.body,
+            extracted: extractedText,
+            numChunks: chunks.length,
+            previewChunk: chunks[0],
+            embeddings: embeddings
+        }
+        await insertRows(chunks)
+        res.status(200).json(embeddedFile)
 
         } catch (err) {
             console.error("Extraction error:", err)
