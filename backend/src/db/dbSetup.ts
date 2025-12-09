@@ -44,17 +44,24 @@ export async function test(data: any) {
   }
 }
 
-export async function insertRows(file: any) {
+export async function insertRows(chunks: any[]) {
   try {
-    //file = file.map((row:any) => `(${row.})`)
-
-    const response = await client.query(`INSERT INTO embeddings (chunktext, embedding, metadata) VALUES ${embeddings}`)
-    const responseData = response.rows
-    console.log("debug: ", responseData)
-    console.log("row inserted")
-  }
-  catch (err) {
-    console.error("Failed to insert row", err)
+    // Insert each chunk with its embedding
+    for (const chunk of chunks) {
+      await client.query(
+        `INSERT INTO embeddings (chunktext, embedding, metadata) 
+         VALUES ($1, $2, $3)`,
+        [
+          chunk.content,
+          JSON.stringify(chunk.embedding), // Convert array to JSON string
+          JSON.stringify(chunk.metadata)   // Convert metadata object to JSON string
+        ]
+      );
+    }
+    console.log(`Successfully inserted ${chunks.length} rows`);
+  } catch (err) {
+    console.error("Failed to insert rows:", err);
+    throw err; // Re-throw so the caller knows it failed
   }
 }
 

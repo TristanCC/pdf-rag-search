@@ -41,11 +41,13 @@ async def embed(req: ChunkRequest):
     
 @app.post("/embed-query")
 async def embed(req: QueryRequest):
-    print("Recieved request:", req)
+    print("Received request:", req)
     queryText = req.queryText
     try:
         embeddedQuery = embedQuery(queryText)
-        return {"embeddedQuery": embeddedQuery}
+
+        # Convert ndarray to list so FastAPI can JSON-encode it
+        return {"embeddedQuery": embeddedQuery.tolist()}
     
     except Exception as e: 
         print("Error in embedding:", e)
