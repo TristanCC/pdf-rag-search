@@ -6,6 +6,8 @@ export async function extractTextPerPage(filePath: string) {
     const fileBuffer = fs.readFileSync(filePath)
     const data = await pdf(fileBuffer)
 
+    console.log(data)
+
     // pdf-parse gives full text, but not page-separated by default
     // so we split by `\f` which is the form-feed page separator
     const pages = data.text.split('\f').map((pageText, idx) => ({

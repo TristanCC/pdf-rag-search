@@ -142,7 +142,7 @@ app.post("/search", express.json(), async (req: Request, res: Response): Promise
         
         }
 
-        console.log(embeddedQuery)
+        console.log("embeddedQuery:", embeddedQuery)
 
         // 2️⃣ Perform vector similarity search
         const dbRes = await client.query(
