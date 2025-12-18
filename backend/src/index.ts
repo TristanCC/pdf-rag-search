@@ -51,51 +51,53 @@ app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
     if (pdf && pdf.mimetype == "application/pdf") {
         try {
             const extractedText = await extractTextPerPage(pdf.path)
-
+        
             // Create chunks with metadata
-            const chunks = extractedText.flatMap(page =>
-                chunkText(page.text).map((chunk, i) => ({
-                    content: chunk.content, // Make sure your chunkText returns {content: string}
-                    metadata: {
-                        filename: pdf.originalname,
-                        pageNumber: page.pageNumber,
-                        chunkIndex: i,
-                        uploadedAt: new Date().toISOString()
-                    }
-                }))
-            )
+            //const chunks = extractedText.flatMap(page =>
+            //    chunkText(page.text).map((chunk, i) => ({
+            //        content: chunk.content, // Make sure your chunkText returns {content: string}
+            //        metadata: {
+            //            filename: pdf.originalname,
+            //            pageNumber: page.pageNumber,
+            //            chunkIndex: i,
+            //            uploadedAt: new Date().toISOString()
+            //        }
+            //    }))
+            //)
             
-            console.log("Chunks to embed:", chunks.length)
+            //console.log("Chunks to embed:", chunks.length)
 
-            // Send to Python service for embedding
-            const embeddingRes = await fetch("http://127.0.0.1:8000/embed", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({chunks})
-            })
+            //// Send to Python service for embedding
+            //const embeddingRes = await fetch("http://127.0.0.1:8000/embed", {
+            //    method: "POST",
+            //    headers: {"Content-Type": "application/json"},
+            //    body: JSON.stringify({chunks})
+            //})
+//
+            //if (!embeddingRes.ok) {
+            //    throw new Error(`Embedding service error: ${embeddingRes.status}`)
+            //}
 
-            if (!embeddingRes.ok) {
-                throw new Error(`Embedding service error: ${embeddingRes.status}`)
-            }
-
-            const embeddingData = await embeddingRes.json()
+            //const embeddingData = await embeddingRes.json()
+            //
+            //// embeddingData should be {chunks: [...]} from your Python service
+            //const embeddedChunks = embeddingData.chunks || embeddingData
+            //
+            //console.log("Received embeddings for", embeddedChunks.length, "chunks")
+//
+            //// Now insert the chunks WITH embeddings
+            //await insertRows(embeddedChunks)
+//
+            //const response = {
+            //    message: "PDF uploaded and processed successfully!",
+            //    filename: pdf.originalname,
+            //    numChunks: embeddedChunks.length,
+            //    previewChunk: embeddedChunks[0]
+            //}
             
-            // embeddingData should be {chunks: [...]} from your Python service
-            const embeddedChunks = embeddingData.chunks || embeddingData
-            
-            console.log("Received embeddings for", embeddedChunks.length, "chunks")
+            //res.status(200).json(response)
 
-            // Now insert the chunks WITH embeddings
-            await insertRows(embeddedChunks)
-
-            const response = {
-                message: "PDF uploaded and processed successfully!",
-                filename: pdf.originalname,
-                numChunks: embeddedChunks.length,
-                previewChunk: embeddedChunks[0]
-            }
-            
-            res.status(200).json(response)
+            res.status(200)
 
         } catch (err) {
             console.error("Processing error:", err)
