@@ -55,7 +55,7 @@ app.post(`/uploadPDF`, upload.single('uploadedPDF'), async (req, res) => {
 
             const extractedText = await extractTextPerPage(pdf.path)
         
-            // Create chunks with metadata, flatten into a stream of chunks
+            // Create chunks with metadata, flatten into an array of chunks
             const chunks = extractedText.flatMap(page => chunkText(page.text).map((chunk, i) => ({
                 content: chunk.content,
                 metadata: {
